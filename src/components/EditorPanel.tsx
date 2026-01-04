@@ -25,7 +25,7 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { OpenInNew, PlayArrow } from '@mui/icons-material';
+import { OpenInNew, PlayArrow, ContentCopy } from '@mui/icons-material';
 import Editor from '@monaco-editor/react';
 import type { Endpoint, Preset, ScreenshotOptions } from '../types';
 
@@ -102,6 +102,41 @@ function EditorPanel({
   const handleCancelApply = () => {
     setConfirmDialog(false);
     setPendingPreset(null);
+  };
+
+  const handleCopyOptions = () => {
+    // 转换为 Python 字典格式
+    const pythonDict = convertToPythonDict(options);
+    navigator.clipboard.writeText(pythonDict).then(() => {
+      setSnackbar({ open: true, message: '已复制 Python 字典格式到剪贴板' });
+    }).catch(() => {
+      setSnackbar({ open: true, message: '复制失败' });
+    });
+  };
+
+  const convertToPythonDict = (opts: ScreenshotOptions): string => {
+    const entries: string[] = [];
+
+    if (opts.quality != null) {
+      entries.push(`    "quality": ${opts.quality}`);
+    }
+    if (opts.timeout != null) {
+      entries.push(`    "timeout": ${opts.timeout * 1000}`);
+    }
+    if (opts.device_scale_factor_level != null) {
+      entries.push(`    "device_scale_factor_level": "${opts.device_scale_factor_level}"`);
+    }
+    if (opts.full_page != null) {
+      entries.push(`    "full_page": ${opts.full_page ? 'True' : 'False'}`);
+    }
+    if (opts.omit_background != null) {
+      entries.push(`    "omit_background": ${opts.omit_background ? 'True' : 'False'}`);
+      entries.push(`    "type": "${opts.omit_background ? 'png' : 'jpeg'}"`);
+    } else {
+      entries.push(`    "type": "jpeg"`);
+    }
+
+    return `{\n${entries.join(',\n')}\n}`;
   };
 
   return (
@@ -225,7 +260,7 @@ function EditorPanel({
                 defaultLanguage="json"
                 value={templateData}
                 onChange={(value) => onTemplateDataChange(value || '')}
-                theme="vs-light"  
+                theme="vs-light"
                 options={{
                   minimap: { enabled: false },
                   fontSize: 14,
@@ -331,10 +366,21 @@ function EditorPanel({
                   label="透明背景（PNG）"
                 />
 
+                <Button
+                  variant="outlined"
+                  startIcon={<ContentCopy />}
+                  onClick={handleCopyOptions}
+                  fullWidth
+                >
+                  复制 options 参数
+                </Button>
+
+
               </Stack>
             </Box>
           )}
         </Box>
+
 
         <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
           <Button
