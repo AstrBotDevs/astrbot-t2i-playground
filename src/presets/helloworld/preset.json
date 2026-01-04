@@ -1,0 +1,9 @@
+{
+    "preset_name": "Hello World",
+    "description": "A simple preset that greets the user by name.",
+    "author": "Soulter",
+    "social_url": "https://github.com/Soulter",
+    "tmpldata": {
+        "name": "User"
+    }
+}
